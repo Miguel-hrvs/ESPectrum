@@ -26,6 +26,8 @@
 
 #include "freertos/FreeRTOS.h"
 
+#include "esp_timer.h"
+
 #include "mouse.h"
 #include "comdrivers/ps2controller.h"
 #include "displaycontroller.h"

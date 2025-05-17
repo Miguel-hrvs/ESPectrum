@@ -5,6 +5,10 @@
 
 #include "soc/i2s_struct.h"
 #include "soc/i2s_reg.h"
+#include "esp32/rom/gpio.h"
+#include "soc/io_mux_reg.h"
+#include "driver/i2s_std.h"
+#include <soc/gpio_sig_map.h>
 #include "driver/periph_ctrl.h"
 #include "soc/rtc.h"
 

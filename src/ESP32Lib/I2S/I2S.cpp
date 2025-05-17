@@ -15,6 +15,8 @@
 #include <soc/rtc.h>
 #include <driver/rtc_io.h>
 #include "Config.h"
+#include "hal/gpio_hal.h"
+#include "esp32/rom/gpio.h"
 
 i2s_dev_t *i2sDevices[] = {&I2S0, &I2S1};
 
@@ -186,12 +188,14 @@ bool I2S::initParallelOutputMode(const int *pinMap, int mode, const int bitCount
 	if (Config::esp32rev > 0)
 	{
 		// ESP32 chip revision > 0
-		rtc_clk_apll_enable(true, vidmodes[mode][vmodeproperties::r1sdm0], vidmodes[mode][vmodeproperties::r1sdm1], vidmodes[mode][vmodeproperties::r1sdm2], vidmodes[mode][vmodeproperties::r1odiv]);
+		rtc_clk_apll_enable(true);
+		rtc_clk_apll_coeff_set(vidmodes[mode][vmodeproperties::r1sdm0], vidmodes[mode][vmodeproperties::r1sdm1], vidmodes[mode][vmodeproperties::r1sdm2], vidmodes[mode][vmodeproperties::r1odiv]);
 	}
 	else
 	{
 		// ESP32 chip revision == 0
-		rtc_clk_apll_enable(true, 0, 0, vidmodes[mode][vmodeproperties::r0sdm2], vidmodes[mode][vmodeproperties::r0odiv]);
+		rtc_clk_apll_enable(true);
+		rtc_clk_apll_coeff_set(0, 0, vidmodes[mode][vmodeproperties::r0sdm2], vidmodes[mode][vmodeproperties::r0odiv]);
 	}
 
 	i2s.clkm_conf.val = 0;

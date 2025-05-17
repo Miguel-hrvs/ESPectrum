@@ -29,6 +29,7 @@
 #else
   #include "rom/uart.h"
 #endif
+#include "esp32/rom/gpio.h"
 #include "soc/uart_reg.h"
 #include "soc/uart_struct.h"
 #include "soc/io_mux_reg.h"

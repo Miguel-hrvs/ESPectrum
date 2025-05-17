@@ -40,6 +40,8 @@ extern "C" {
 #include "driver/sdspi_host.h"
 #include "sdmmc_cmd.h"
 #include "esp_spiffs.h"
+#include "esp_timer.h"
+#include "hal/gpio_hal.h"
 #include "soc/efuse_reg.h"
 #include "soc/rtc.h"
 #include "esp_ipc.h"
@@ -1175,49 +1177,56 @@ bool FileBrowser::format(DriveType driveType, int drive)
 
 #else
 
-bool FileBrowser::format(DriveType driveType, int drive)
+bool FileBrowser::format(DriveType driveType, int drive) 
 {
-  esp_task_wdt_init(45, false);
+    // Initialize Task Watchdog with new API
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = 45000,  // 45 seconds in milliseconds
+        .idle_core_mask = 0,  // Don't trigger on idle tasks
+        .trigger_panic = false // Don't panic on timeout
+    };
+    esp_task_wdt_init(&twdt_config);
 
-  if (driveType == DriveType::SDCard && s_SDCardMounted) {
+    if (driveType == DriveType::SDCard && s_SDCardMounted) {
+        // unmount filesystem
+        char drv[3] = {(char)('0' + drive), ':', 0};
+        f_mount(0, drv, 0);
 
-    // unmount filesystem
-    char drv[3] = {(char)('0' + drive), ':', 0};
-    f_mount(0, drv, 0);
+        void * buffer = malloc(FF_MAX_SS);
+        if (!buffer)
+            return false;
 
-    void * buffer = malloc(FF_MAX_SS);
-    if (!buffer)
-      return false;
+        // create partition
+        DWORD plist[] = { 100, 0, 0, 0 };
+        if (f_fdisk(drive, plist, buffer) != FR_OK) {
+            free(buffer);
+            return false;
+        }
 
-    // create partition
-    DWORD plist[] = { 100, 0, 0, 0 };
-    if (f_fdisk(drive, plist, buffer) != FR_OK) {
-      free(buffer);
-      return false;
+        // make filesystem
+        MKFS_PARM mkfs_parm = {
+            .fmt = FM_ANY,      // Format option
+            .n_fat = 1,         // Number of FATs
+            .align = 0,         // Alignment
+            .n_root = 512,      // Number of root directory entries
+            .au_size = 16*1024  // Cluster size (16KB as you intended)
+        };
+        
+        if (f_mkfs(drv, &mkfs_parm, buffer, FF_MAX_SS) != FR_OK) {
+            free(buffer);
+            return false;
+        }
+
+        free(buffer);
+        remountSDCard();
+        return true;
+
+    } else if (driveType == DriveType::SPIFFS && s_SPIFFSMounted) {
+        bool r = (esp_spiffs_format(nullptr) == ESP_OK);
+        remountSPIFFS();
+        return r;
     }
-
-    // make filesystem
-    if (f_mkfs(drv, FM_ANY, 16 * 1024, buffer, FF_MAX_SS) != FR_OK) {
-      free(buffer);
-      return false;
-    }
-
-    free(buffer);
-
-    remountSDCard();
-
-    return true;
-
-  } else if (driveType == DriveType::SPIFFS && s_SPIFFSMounted) {
-
-    // driveType == DriveType::SPIFFS
-    bool r = (esp_spiffs_format(nullptr) == ESP_OK);
-
-    remountSPIFFS();
-
-    return r;
-
-  } else
+    
     return false;
 }
 

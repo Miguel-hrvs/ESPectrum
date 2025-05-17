@@ -23,7 +23,7 @@
   along with FabGL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "esp_timer.h"  // Required for esp_timer_get_time()
 #include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
 
@@ -943,12 +943,19 @@ uiTimerHandle uiApp::setTimer(uiEvtHandler * dest, int periodMS)
 }
 
 
-void uiApp::killTimer(uiTimerHandle handle)
-{
-  auto dest = (uiEvtHandler *) pvTimerGetTimerID(handle);
-  m_timers.remove(uiTimerAssoc(dest, handle));
-  xTimerStop(handle, portMAX_DELAY);
-  xTimerDelete(handle, portMAX_DELAY);
+void uiApp::killTimer(uiTimerHandle handle) {
+  // First cast to TimerHandle_t
+  TimerHandle_t timerHandle = static_cast<TimerHandle_t>(handle);
+  
+  // Get the event handler
+  auto dest = static_cast<uiEvtHandler*>(pvTimerGetTimerID(timerHandle));
+  
+  // Create the association pair with consistent types
+  m_timers.remove(uiTimerAssoc(dest, timerHandle));  // Use timerHandle instead of handle
+  
+  // Stop and delete the timer
+  xTimerStop(timerHandle, portMAX_DELAY);
+  xTimerDelete(timerHandle, portMAX_DELAY);
 }
 
 
@@ -985,18 +992,20 @@ void uiApp::showCaret(uiWindow * window)
 }
 
 
-void uiApp::suspendCaret(bool value)
-{
+void uiApp::suspendCaret(bool value) {
   if (m_caretTimer) {
+    // First cast the uiTimerHandle to TimerHandle_t
+    TimerHandle_t timerHandle = static_cast<TimerHandle_t>(m_caretTimer);
+    
     if (value) {
       if (m_caretInvertState != -1) {
-        xTimerStop(m_caretTimer, 0);
+        xTimerStop(timerHandle, 0);
         blinkCaret(true); // force off
         m_caretInvertState = -1;
       }
     } else {
       if (m_caretInvertState == -1) {
-        xTimerStart(m_caretTimer, 0);
+        xTimerStart(timerHandle, 0);
         m_caretInvertState = 0;
         blinkCaret();
       }

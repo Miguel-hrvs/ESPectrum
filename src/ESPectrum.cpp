@@ -54,13 +54,14 @@ visit https://zxespectrum.speccy.org/contacto
 #include "wd1793.h"
 
 #include "ZXKeyb.h"
+#include "esp_chip_info.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/timer.h"
 #include "soc/timer_group_struct.h"
 #include "esp_timer.h"
 #include "esp_system.h"
-#include "esp_spi_flash.h"
+#include "esp_flash.h"
 #include "esp_efuse.h"
 #include "soc/efuse_reg.h"
 #include "nvs_flash.h"
@@ -701,6 +702,8 @@ void ESPectrum::setup() {
     }
 
     // Get chip information
+    uint32_t size_flash_chip;
+    esp_flash_get_size(NULL, &size_flash_chip);
     esp_chip_info_t chip_info;
     esp_chip_info(&chip_info);
     Config::esp32rev = chip_info.revision;
@@ -713,8 +716,8 @@ void ESPectrum::setup() {
                 chip_info.cores,
                 (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
                 (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
-        printf("silicon revision %d, ", chip_info.revision);
-        printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024),
+        //printf("silicon revision %d, ", chip_info.revision);
+        printf("%dMB %s flash\n", size_flash_chip / (1024 * 1024),
                 (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
         printf("IDF Version: %s\n",esp_get_idf_version());
         printf("\n");
@@ -1824,8 +1827,8 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
     pac.gpio_num_right     = -1;
     pac.ledc_channel_right = LEDC_CHANNEL_1;
     pac.ledc_timer_sel     = LEDC_TIMER_0;
-    pac.tg_num             = TIMER_GROUP_0;
-    pac.timer_num          = TIMER_0;
+    //pac.tg_num             = TIMER_GROUP_0;
+    //pac.timer_num          = TIMER_0;
     pac.ringbuf_len        = 3072; /* 4096; */
 
     pwm_audio_init(&pac);

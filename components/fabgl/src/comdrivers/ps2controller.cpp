@@ -28,7 +28,10 @@
 
 #include "freertos/FreeRTOS.h"
 
+#include "hal/rtc_io_hal.h"
 #include "esp32/ulp.h"
+//#include "esp_mac.h"
+#include "ulp_macro_ex.h"
 #include "driver/rtc_io.h"
 #include "soc/sens_reg.h"
 #if __has_include("soc/rtc_io_periph.h")
@@ -38,7 +41,6 @@
 
 #include "ps2controller.h"
 #include "fabutils.h"
-#include "ulp_macro_ex.h"
 #include "devdrivers/keyboard.h"
 #include "devdrivers/kbjoystick.h"
 #include "devdrivers/mouse.h"

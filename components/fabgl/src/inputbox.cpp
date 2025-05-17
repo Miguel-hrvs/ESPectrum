@@ -27,6 +27,8 @@
 #include <string.h>
 #include <memory>
 
+#include "esp_timer.h"
+
 #include "dispdrivers/vgacontroller.h"
 #include "dispdrivers/vga2controller.h"
 #include "dispdrivers/vga4controller.h"

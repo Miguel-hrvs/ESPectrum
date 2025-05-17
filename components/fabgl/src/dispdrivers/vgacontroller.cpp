@@ -31,6 +31,7 @@
 #include "freertos/FreeRTOS.h"
 
 #include "soc/i2s_struct.h"
+#include "esp_timer.h"
 
 #include "fabutils.h"
 #include "vgacontroller.h"

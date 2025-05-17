@@ -37,6 +37,10 @@
 #include "soc/i2s_reg.h"
 #include "driver/periph_ctrl.h"
 #include "soc/rtc.h"
+#include "esp32/rom/gpio.h"
+#include "soc/io_mux_reg.h"
+#include "driver/i2s_std.h"
+#include <soc/gpio_sig_map.h>
 
 #include "fabutils.h"
 #include "devdrivers/swgenerator.h"
@@ -711,10 +715,9 @@ void VGABaseController::setDMABufferView(int index, int row, int scan, bool isSt
 }
 
 
-void volatile * VGABaseController::getDMABuffer(int index, int * length)
-{
-  *length = m_DMABuffers[index].length;
-  return m_DMABuffers[index].buf;
+volatile void* VGABaseController::getDMABuffer(int index, int* length) {
+    *length = m_DMABuffers[index].length;
+    return (void*)&m_DMABuffers[index].buf;  // Explicit cast to void*
 }
 
 

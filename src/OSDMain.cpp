@@ -56,9 +56,14 @@ visit https://zxespectrum.speccy.org/contacto
 
 #include "fabgl.h"
 
-#include "soc/rtc_wdt.h"
-#include "esp_int_wdt.h"
-#include "esp_task_wdt.h"
+#include "rtc_wdt.h"
+#include "esp_private/esp_int_wdt.h"
+#include "esp_private/esp_task_wdt.h"
+#include "esp_chip_info.h"
+#include "esp_flash.h"
+#include <sys/stat.h>  // For stat() and mkdir()
+#include <unistd.h>    // For filesystem operations (optional but recommended)
+#include <fcntl.h>    /* For O_RDWR */
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -3319,6 +3324,8 @@ void OSD::HWInfo() {
     string textout = " Chip model    : ";
     uint32_t chip_ver = esp_efuse_get_pkg_ver();
     uint32_t pkg_ver = chip_ver & 0x7;
+    uint32_t size_flash_chip;
+    esp_flash_get_size(NULL, &size_flash_chip);
     switch (pkg_ver) {
         case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6 :
             if (chip_info.revision == 3)
@@ -3359,7 +3366,7 @@ void OSD::HWInfo() {
     textout = " Chip revision : " + to_string(chip_info.revision) + "\n";
     VIDEO::vga.print(textout.c_str());
 
-    textout = " Flash size    : " + to_string(spi_flash_get_chip_size() / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n";
+    textout = " Flash size    : " + to_string(size_flash_chip / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n";
     VIDEO::vga.print(textout.c_str());
 
     multi_heap_info_t info;
