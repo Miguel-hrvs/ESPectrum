@@ -716,7 +716,7 @@ void ESPectrum::setup() {
                 chip_info.cores,
                 (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
                 (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
-        //printf("silicon revision %d, ", chip_info.revision);
+        printf("silicon revision %d, ", chip_info.revision);
         printf("%dMB %s flash\n", size_flash_chip / (1024 * 1024),
                 (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
         printf("IDF Version: %s\n",esp_get_idf_version());
