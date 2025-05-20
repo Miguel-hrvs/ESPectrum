@@ -1204,8 +1204,7 @@ bool FileBrowser::format(DriveType driveType, int drive)
 
         // make filesystem
         MKFS_PARM mkfs_opt = {
-          .fmt = FM_FAT32,      // Format option (FM_FAT, FM_FAT32, FM_EXFAT, or FM_ANY)
-          .align = 0,         // Data area alignment (sectors)
+          .fmt = FM_ANY,      // Format option (FM_FAT, FM_FAT32, FM_EXFAT, or FM_ANY)
           .au_size = 16 * 1024 // Cluster size (bytes)
         };
         
