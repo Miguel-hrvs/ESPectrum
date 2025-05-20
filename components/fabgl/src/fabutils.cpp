@@ -1182,7 +1182,6 @@ bool FileBrowser::format(DriveType driveType, int drive)
     // Initialize Task Watchdog with new API
     esp_task_wdt_config_t twdt_config = {
         .timeout_ms = 45000,  // 45 seconds in milliseconds
-        .idle_core_mask = 0,  // Don't trigger on idle tasks
         .trigger_panic = false // Don't panic on timeout
     };
     esp_task_wdt_init(&twdt_config);
@@ -1204,30 +1203,33 @@ bool FileBrowser::format(DriveType driveType, int drive)
         }
 
         // make filesystem
-        MKFS_PARM mkfs_parm = {
-            .fmt = FM_ANY,      // Format option
-            .n_fat = 1,         // Number of FATs
-            .align = 0,         // Alignment
-            .n_root = 512,      // Number of root directory entries
-            .au_size = 16*1024  // Cluster size (16KB as you intended)
+        MKFS_PARM mkfs_opt = {
+          .fmt = FM_FAT32,      // Format option (FM_FAT, FM_FAT32, FM_EXFAT, or FM_ANY)
+          .align = 0,         // Data area alignment (sectors)
+          .au_size = 16 * 1024 // Cluster size (bytes)
         };
         
-        if (f_mkfs(drv, &mkfs_parm, buffer, FF_MAX_SS) != FR_OK) {
-            free(buffer);
-            return false;
+        if (f_mkfs(drv, &mkfs_opt, buffer, FF_MAX_SS) != FR_OK) {
+          free(buffer);
+          return false;
         }
 
         free(buffer);
+
         remountSDCard();
+        
         return true;
 
     } else if (driveType == DriveType::SPIFFS && s_SPIFFSMounted) {
+        
+        // driveType == DriveType::SPIFFS
         bool r = (esp_spiffs_format(nullptr) == ESP_OK);
+        
         remountSPIFFS();
+        
         return r;
-    }
-    
-    return false;
+    } else
+      return false;
 }
 
 #endif
