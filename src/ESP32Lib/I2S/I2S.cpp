@@ -186,16 +186,16 @@ bool I2S::initParallelOutputMode(const int *pinMap, int mode, const int bitCount
 	int clockN = 2, clockA = 1, clockB = 0, clockDiv = 1;
 
 	if (Config::esp32rev > 0)
-	{
+	{	
 		// ESP32 chip revision > 0
 		rtc_clk_apll_enable(true);
-		rtc_clk_apll_coeff_set(vidmodes[mode][vmodeproperties::r1sdm0], vidmodes[mode][vmodeproperties::r1sdm1], vidmodes[mode][vmodeproperties::r1sdm2], vidmodes[mode][vmodeproperties::r1odiv]);
+		rtc_clk_apll_coeff_set(vidmodes[mode][vmodeproperties::r1odiv], vidmodes[mode][vmodeproperties::r1sdm0], vidmodes[mode][vmodeproperties::r1sdm1], vidmodes[mode][vmodeproperties::r1sdm2]);
 	}
 	else
 	{
 		// ESP32 chip revision == 0
 		rtc_clk_apll_enable(true);
-		rtc_clk_apll_coeff_set(0, 0, vidmodes[mode][vmodeproperties::r0sdm2], vidmodes[mode][vmodeproperties::r0odiv]);
+		rtc_clk_apll_coeff_set(vidmodes[mode][vmodeproperties::r0odiv], 0, 0, vidmodes[mode][vmodeproperties::r0sdm2]);
 	}
 
 	i2s.clkm_conf.val = 0;
